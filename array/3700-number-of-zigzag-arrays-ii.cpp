@@ -93,8 +93,8 @@ public:
 #include "../test.hpp"
 
 KET_TEST_MAIN(
-    &Solution::zigZagArrays, 
-    (vector<tuple<tuple<vector<int>, int>, int>> {
+    &Solution::zigZagArrays,
+    (std::vector<std::tuple<std::tuple<int, int, int>, int>> {
         { { 3, 4, 5 }, 2 },
         { { 3, 1, 3 }, 10 },
         { { 8, 34, 67 }, 2633967 },
