@@ -2,10 +2,12 @@
 #define KET_TEST_HPP
 
 #define KET_TEST_MAIN(f, test_cases) int main() { run_tests((f), (test_cases)); return 0; }
+#define KET_TEST_MAIN_EQ(f, test_cases, eq) int main() { run_tests((f), (test_cases), (eq)); return 0; }
 
 #include <vector>
 #include <tuple>
 #include <iostream>
+#include <print>
 
 template<
     typename TSolution,
@@ -55,6 +57,38 @@ TResult run_test_case(
 
 
 template<
+    typename TElem = void,
+    typename TComp = std::equal_to<TElem>
+>
+struct CompVectorUnsorted {
+    TComp comp;
+    CompVectorUnsorted() : comp{} {}
+    CompVectorUnsorted(auto&& comp) : comp{comp} {}
+
+    bool operator()(auto& a, auto& b) {
+        std::sort(a.begin(), a.end());
+        std::sort(b.begin(), b.end());
+        auto it_a = a.begin();
+        auto it_b = b.begin();
+        while(true) {
+            bool a_ended = it_a == a.end();
+            bool b_ended = it_b == b.end();
+            if (a_ended || b_ended) {
+                return a_ended && b_ended;
+            }
+
+            if (!comp(*it_a, *it_b)) {
+                return false;
+            }
+            ++it_a;
+            ++it_b;
+        }
+        return true;
+    }
+};
+
+
+template<
     typename TSolution,
     typename TResult,
     typename... TArgs
@@ -63,14 +97,31 @@ void run_tests(
     SolutionFunction<TSolution, TResult, TArgs...> f,
     std::vector<TestCase<TResult, TArgs...>> test_cases
 ) {
+	run_tests(
+        f,
+        test_cases,
+        std::equal_to<>{}
+    );
+};
+
+template<
+    typename TSolution,
+    typename TResult,
+    typename... TArgs
+>
+void run_tests(
+    SolutionFunction<TSolution, TResult, TArgs...> f,
+    std::vector<TestCase<TResult, TArgs...>> test_cases,
+    auto comp
+) {
 	int idx = 0;
 	for (auto& [args, expected] : test_cases) {
         auto result = run_test_case(f, args);
-		cout << "Case " << idx++ << ": ";
-		if (result == expected) {
-			cout << "PASS\n";
+        std::print("Case {}: ", idx++);
+		if (comp(result, expected)) {
+			std::println("PASS");
 		} else {
-			cout << "FAIL: " << result << " != " << expected << "\n";
+			std::println("FAIL: {} {}", result, expected);
 		}
 	}
 };
