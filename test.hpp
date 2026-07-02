@@ -43,13 +43,11 @@ TResult run_test_case(
 ) {
     TSolution s;
     if constexpr (sizeof...(TArgs) > 1) {
-        return std::apply(
-            f,
-            std::tuple_cat(
-                std::tuple<Solution&>(s),
-                args
-            )
+        auto all_args = std::tuple_cat(
+            std::tuple<Solution&>(s),
+            args
         );
+        return std::apply(f, all_args);
     } else {
         return (s.*f)(args);
     }
